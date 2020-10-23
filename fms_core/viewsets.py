@@ -349,7 +349,8 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
 
 
 class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
-    queryset = Sample.objects.all().select_related("individual", "container")
+    #queryset = Sample.objects.all().select_related("individual", "container")
+    queryset = Sample.objects.all()
 
     filterset_fields = {
         **_sample_filterset_fields,

@@ -141,7 +141,7 @@ class SampleAdmin(AggregatedAdmin):
         "biospecimen_type",
         "name",
         "alias",
-        "individual",
+        #"individual",
         "container",
         "coordinates",
         "volume",
@@ -150,7 +150,7 @@ class SampleAdmin(AggregatedAdmin):
     )
 
     list_select_related = (
-        "individual",
+        #"individual",
         "container",
         "extracted_from",
     )
@@ -167,7 +167,7 @@ class SampleAdmin(AggregatedAdmin):
     )
 
     fieldsets = (
-        (None, {"fields": ("biospecimen_type", "name", "alias", "individual", "reception_date", "collection_site")}),
+        (None, {"fields": ("biospecimen_type", "name", "alias", "reception_date", "collection_site")}),
         ("Quantity Information", {"fields": ("volume_history", "concentration", "depleted")}),
         ("For Extracted Samples Only", {"fields": ("extracted_from", "volume_used")}),
         ("Location", {"fields": ("container", "coordinates")}),
@@ -214,8 +214,8 @@ class IndividualForm(forms.ModelForm):
 
         if kwargs.get("instance"):
             parent_queryset = Individual.objects.filter(taxon=self.instance.taxon).exclude(id=self.instance.id)
-            self.fields["mother"].queryset = parent_queryset
-            self.fields["father"].queryset = parent_queryset
+            #self.fields["mother"].queryset = parent_queryset
+            #self.fields["father"].queryset = parent_queryset
 
 
 @admin.register(Individual)
@@ -228,14 +228,14 @@ class IndividualAdmin(ExportVersionAdmin):
         "taxon",
         "sex",
         "pedigree",
-        "mother",
-        "father",
+        #"mother",
+        #"father",
         "cohort",
     )
 
     list_select_related = (
-        "mother",
-        "father",
+        #"mother",
+        #"father",
     )
 
     list_filter = (

@@ -1,4 +1,5 @@
 import reversion
+import uuid
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -36,10 +37,13 @@ class Individual(models.Model):
         (SEX_UNKNOWN, SEX_UNKNOWN),
     )
 
-    id = models.CharField(primary_key=True, max_length=200, help_text="Unique identifier for the individual.")
+    uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=200, help_text="Unique identifier for the individual.")
     taxon = models.CharField(choices=TAXON_CHOICES, max_length=20, help_text="Taxonomic group of a species.")
     sex = models.CharField(choices=SEX_CHOICES, max_length=10, help_text="Sex of the individual.")
     pedigree = models.CharField(max_length=200, blank=True, help_text="Common ID to associate children and parents.")
+    mother_old = models.CharField(blank=True, null=True, max_length=200)
+    father_old = models.CharField(blank=True, null=True, max_length=200)
     mother = models.ForeignKey("self", blank=True, null=True, on_delete=models.PROTECT, related_name="mother_of",
                                help_text="Mother of the individual.")
     father = models.ForeignKey("self", blank=True, null=True, on_delete=models.PROTECT, related_name="father_of",
