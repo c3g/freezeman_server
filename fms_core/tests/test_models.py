@@ -100,7 +100,7 @@ class SampleTest(TestCase):
         self.assertEqual(sample.is_depleted, "no")
         self.assertEqual(sample.volume, Decimal("5000.000"))
         # TODO check why it didn't fail before
-        #self.assertEqual(sample.individual_id, "jdoe")
+        # self.assertEqual(sample.individual_id, "jdoe")
         self.assertEqual(sample.individual.id, "jdoe")
         self.assertEqual(sample.individual_sex, Individual.SEX_UNKNOWN)
         self.assertEqual(sample.individual_taxon, Individual.TAXON_HOMO_SAPIENS)
