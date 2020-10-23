@@ -91,8 +91,6 @@ class Sample(models.Model):
                             help_text="Sample name.")
     alias = models.CharField(max_length=200, blank=True, help_text="Alternative sample name given by the "
                                                                    "collaborator or customer.")
-
-    individual_old = models.CharField(blank=True, null=True, max_length=200)
     individual = models.ForeignKey("Individual", on_delete=models.PROTECT, null=True,
                                    help_text="Individual associated with the sample.")
     volume_history = models.JSONField("volume history in µL", validators=[VOLUME_VALIDATOR],
