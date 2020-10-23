@@ -38,7 +38,8 @@ class Individual(models.Model):
     )
 
     uuid = models.UUIDField(primary_key=True, unique=True, default=uuid.uuid4, editable=False)
-    id = models.CharField(max_length=200, help_text="Unique identifier for the individual.")
+    # the id we get from the submitted templates, also has to be unique but editable
+    id = models.CharField(max_length=200, unique=True, help_text="Unique identifier for the individual.")
     taxon = models.CharField(choices=TAXON_CHOICES, max_length=20, help_text="Taxonomic group of a species.")
     sex = models.CharField(choices=SEX_CHOICES, max_length=10, help_text="Sex of the individual.")
     pedigree = models.CharField(max_length=200, blank=True, help_text="Common ID to associate children and parents.")
