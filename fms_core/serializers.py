@@ -8,6 +8,7 @@ from .models import Container, Sample, Individual
 __all__ = [
     "ContainerSerializer",
     "SimpleContainerSerializer",
+    "MinimalContainerSerializer",
     "IndividualSerializer",
     "SampleSerializer",
     "NestedSampleSerializer",
@@ -30,14 +31,26 @@ class SimpleContainerSerializer(serializers.ModelSerializer):
         model = Container
         fields = "__all__"
 
+class ContainerExportSerializer(serializers.ModelSerializer):
+    location = serializers.SlugRelatedField(slug_field='barcode', read_only=True)
+    class Meta:
+        model = Container
+        fields = ('kind', 'name', 'barcode', 'location', 'coordinates', 'comment')
+
 
 class IndividualSerializer(serializers.ModelSerializer):
     class Meta:
         model = Individual
         fields = "__all__"
 
-
 class SampleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sample
+        fields = "__all__"
+
+class SampleExportSerializer(serializers.ModelSerializer):
+    individual = IndividualSerializer(read_only=True)
+    container = ContainerExportSerializer(read_only=True)
     class Meta:
         model = Sample
         fields = "__all__"

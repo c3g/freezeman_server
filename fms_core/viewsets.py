@@ -25,6 +25,7 @@ from .resources import (
 )
 from .serializers import (
     ContainerSerializer,
+    ContainerExportSerializer,
     SampleSerializer,
     NestedSampleSerializer,
     IndividualSerializer,
@@ -306,6 +307,12 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
         serializer = self.get_serializer(containers_data, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=["get"])
+    def list_export(self, _request):
+        containers_data = Container.objects.all()
+        serializer = ContainerExportSerializer(containers_data, many=True)
+        return Response(serializer.data)
+
     @action(detail=True, methods=["get"])
     def list_children(self, _request, pk=None):
         """
@@ -388,6 +395,12 @@ class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
         if nested:
             return NestedSampleSerializer
         return SampleSerializer
+
+    @action(detail=False, methods=["get"])
+    def list_export(self, _request):
+        samples = Sample.objects.order_by('-id')[:100].prefetch_related("container", "individual")
+        serializer = NestedSampleSerializer(samples, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def summary(self, _request):
