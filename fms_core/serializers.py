@@ -54,7 +54,8 @@ class SampleExportSerializer(serializers.ModelSerializer):
     taxon = serializers.CharField(read_only=True, source="individual.taxon")
     sex = serializers.CharField(read_only=True, source="individual.sex")
     pedigree = serializers.CharField(read_only=True, source="individual.pedigree")
-    # left : mother, father ids based on what field?
+    mother_id = serializers.SerializerMethodField()
+    father_id = serializers.SerializerMethodField()
     container_kind = serializers.CharField(read_only=True, source="container.kind")
     container_name = serializers.CharField(read_only=True, source="container.name")
     container_barcode = serializers.CharField(read_only=True, source="container.barcode")
@@ -65,7 +66,7 @@ class SampleExportSerializer(serializers.ModelSerializer):
         model = Sample
         fields = ('biospecimen_type', 'name', 'alias', 'concentration', 'depleted', 'collection_site', 'tissue_source',
                   'reception_date', 'phenotype', 'comment', 'coordinates', 'volume_used',
-                  'individual_id', 'taxon', 'sex', 'pedigree',
+                  'individual_id', 'taxon', 'sex', 'pedigree', 'mother_id', 'father_id',
                   'container_kind', 'container_name', 'container_barcode', 'container_coordinates', 'location_barcode')
 
     def get_location_barcode(self, obj):
@@ -73,6 +74,15 @@ class SampleExportSerializer(serializers.ModelSerializer):
             return ''
         else:
             return obj.container.location.barcode
+
+    def get_father_id(self, obj):
+        father = '' if obj.individual.father is None else obj.individual.father
+        return father
+
+    def get_mother_id(self, obj):
+        mother = '' if obj.individual.mother is None else obj.individual.mother
+        return mother
+
 
 
 class NestedSampleSerializer(serializers.ModelSerializer):
