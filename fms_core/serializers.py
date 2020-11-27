@@ -7,9 +7,11 @@ from .models import Container, Sample, Individual
 
 __all__ = [
     "ContainerSerializer",
+    "ContainerExportSerializer",
     "SimpleContainerSerializer",
     "IndividualSerializer",
     "SampleSerializer",
+    "SampleExportSerializer"
     "NestedSampleSerializer",
     "VersionSerializer",
     "UserSerializer",
@@ -46,6 +48,24 @@ class SampleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sample
         fields = "__all__"
+
+class SampleExportSerializer(serializers.ModelSerializer):
+    individual_id = serializers.CharField(read_only=True, source="individual.label")
+    taxon = serializers.CharField(read_only=True, source="individual.taxon")
+    sex = serializers.CharField(read_only=True, source="individual.sex")
+    pedigree = serializers.CharField(read_only=True, source="individual.pedigree")
+    # left : mother, father, container location
+    container_kind = serializers.CharField(read_only=True, source="container.kind")
+    container_name = serializers.CharField(read_only=True, source="container.name")
+    container_barcode = serializers.CharField(read_only=True, source="container.barcode")
+    container_coordinates = serializers.CharField(read_only=True, source="container.coordinates")
+
+    class Meta:
+        model = Sample
+        fields = ('biospecimen_type', 'name', 'alias', 'concentration', 'depleted', 'collection_site', 'tissue_source',
+                  'reception_date', 'phenotype', 'comment', 'coordinates', 'volume_used',
+                  'individual_id', 'taxon', 'sex', 'pedigree',
+                  'container_kind', 'container_name', 'container_barcode', 'container_coordinates')
 
 
 class NestedSampleSerializer(serializers.ModelSerializer):

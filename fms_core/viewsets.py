@@ -27,6 +27,7 @@ from .serializers import (
     ContainerSerializer,
     ContainerExportSerializer,
     SampleSerializer,
+    SampleExportSerializer,
     NestedSampleSerializer,
     IndividualSerializer,
     VersionSerializer,
@@ -398,8 +399,8 @@ class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
 
     @action(detail=False, methods=["get"])
     def list_export(self, _request):
-        samples = Sample.objects.order_by('-id')[:100].prefetch_related("container", "individual")
-        serializer = NestedSampleSerializer(samples, many=True)
+        samples = Sample.objects.all().prefetch_related("container", "individual")
+        serializer = SampleExportSerializer(samples, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
