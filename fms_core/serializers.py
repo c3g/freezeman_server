@@ -11,7 +11,7 @@ __all__ = [
     "SimpleContainerSerializer",
     "IndividualSerializer",
     "SampleSerializer",
-    "SampleExportSerializer"
+    "SampleExportSerializer",
     "NestedSampleSerializer",
     "VersionSerializer",
     "UserSerializer",
