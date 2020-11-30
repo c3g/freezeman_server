@@ -32,8 +32,10 @@ class SimpleContainerSerializer(serializers.ModelSerializer):
         model = Container
         fields = "__all__"
 
+
 class ContainerExportSerializer(serializers.ModelSerializer):
     location = serializers.SlugRelatedField(slug_field='barcode', read_only=True)
+
     class Meta:
         model = Container
         fields = ('kind', 'name', 'barcode', 'location', 'coordinates', 'comment')
@@ -44,10 +46,12 @@ class IndividualSerializer(serializers.ModelSerializer):
         model = Individual
         fields = "__all__"
 
+
 class SampleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sample
         fields = "__all__"
+
 
 class SampleExportSerializer(serializers.ModelSerializer):
     individual_id = serializers.CharField(read_only=True, source="individual.label")
@@ -82,7 +86,6 @@ class SampleExportSerializer(serializers.ModelSerializer):
     def get_mother_id(self, obj):
         mother = '' if obj.individual.mother is None else obj.individual.mother
         return mother
-
 
 
 class NestedSampleSerializer(serializers.ModelSerializer):
