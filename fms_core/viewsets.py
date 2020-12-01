@@ -448,6 +448,12 @@ class IndividualViewSet(viewsets.ModelViewSet):
     def versions(self, request, pk=None):
         return versions_detail(self.get_object())
 
+    @action(detail=False, methods=["get"])
+    def list_export(self, _request):
+        individuals = Individual.objects.all()
+        serializer = IndividualSerializer(individuals, many=True)
+        return Response(serializer.data)
+
 
 # noinspection PyMethodMayBeStatic,PyUnusedLocal
 class QueryViewSet(viewsets.ViewSet):
