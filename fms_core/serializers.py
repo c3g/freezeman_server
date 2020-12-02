@@ -8,7 +8,9 @@ from .models import Container, Sample, Individual
 __all__ = [
     "ContainerSerializer",
     "SimpleContainerSerializer",
+    "NestedContainerSerializer",
     "IndividualSerializer",
+    "NestedIndividualSerializer",
     "SampleSerializer",
     "NestedSampleSerializer",
     "VersionSerializer",
@@ -51,6 +53,25 @@ class NestedSampleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sample
+        fields = "__all__"
+
+
+class NestedContainerSerializer(serializers.ModelSerializer):
+    children = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    location = SimpleContainerSerializer(read_only=True)
+    samples = SampleSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Container
+        fields = "__all__"
+
+
+class NestedIndividualSerializer(serializers.ModelSerializer):
+    mother = IndividualSerializer(read_only=True)
+    father = IndividualSerializer(read_only=True)
+
+    class Meta:
+        model = Individual
         fields = "__all__"
 
 

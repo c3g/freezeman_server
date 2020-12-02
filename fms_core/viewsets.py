@@ -25,9 +25,11 @@ from .resources import (
 )
 from .serializers import (
     ContainerSerializer,
+    NestedContainerSerializer,
     SampleSerializer,
     NestedSampleSerializer,
     IndividualSerializer,
+    NestedIndividualSerializer,
     VersionSerializer,
     UserSerializer,
 )
@@ -246,7 +248,6 @@ _individual_filterset_fields: FiltersetFields = {
 
 class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
     queryset = Container.objects.all().prefetch_related("location", "children", "samples")
-    serializer_class = ContainerSerializer
     filterset_fields = {
         **_container_filterset_fields,
         **_prefix_keys("location__", _container_filterset_fields),
@@ -272,6 +273,16 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
             "resource": ContainerRenameResource,
         }
     ]
+
+    def get_serializer_class(self):
+        # If the nested query param is passed in with a non-false-y string
+        # value, use the nested sample serializer; this will nest referenced
+        # objects 1 layer deep to provide more data in a single request.
+
+        nested = self.request.query_params.get("nested", False)
+        if nested:
+            return NestedContainerSerializer
+        return ContainerSerializer
 
     @action(detail=False, methods=["get"])
     def summary(self, _request):
@@ -426,8 +437,18 @@ class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
 
 class IndividualViewSet(viewsets.ModelViewSet):
     queryset = Individual.objects.all()
-    serializer_class = IndividualSerializer
     filterset_fields = _individual_filterset_fields
+
+    def get_serializer_class(self):
+        # If the nested query param is passed in with a non-false-y string
+        # value, use the nested sample serializer; this will nest referenced
+        # objects 1 layer deep to provide more data in a single request.
+
+        nested = self.request.query_params.get("nested", False)
+        if nested:
+            return NestedIndividualSerializer
+        return IndividualSerializer
+
 
     # noinspection PyUnusedLocal
     @action(detail=True, methods=["get"])
