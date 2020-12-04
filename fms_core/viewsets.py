@@ -247,7 +247,7 @@ _individual_filterset_fields: FiltersetFields = {
 
 
 class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
-    queryset = Container.objects.all().prefetch_related("location", "children", "samples")
+    queryset = Container.objects.select_related("location").prefetch_related("children", "samples").all()
     serializer_class = ContainerSerializer
     filterset_fields = {
         **_container_filterset_fields,
@@ -272,7 +272,7 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
             "description": "Upload the provided template with up to 384 containers to rename.",
             "template": CONTAINER_RENAME_TEMPLATE,
             "resource": ContainerRenameResource,
-        }
+        },
     ]
 
     @action(detail=False, methods=["get"])
@@ -310,7 +310,7 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
 
     @action(detail=False, methods=["get"])
     def list_export(self, _request):
-        containers_data = Container.objects.all()
+        containers_data = Container.objects.select_related("location").prefetch_related("children", "samples").all()
         serializer = ContainerExportSerializer(containers_data, many=True)
         return Response(serializer.data)
 
@@ -399,7 +399,7 @@ class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
 
     @action(detail=False, methods=["get"])
     def list_export(self, _request):
-        samples = Sample.objects.all().prefetch_related("container", "individual")
+        samples = Sample.objects.all().select_related("container", "individual")
         serializer = SampleExportSerializer(samples, many=True)
         return Response(serializer.data)
 
