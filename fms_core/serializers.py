@@ -48,9 +48,21 @@ class IndividualSerializer(serializers.ModelSerializer):
 
 
 class SampleSerializer(serializers.ModelSerializer):
+    last_volume_history = serializers.SerializerMethodField()
+
     class Meta:
         model = Sample
         fields = "__all__"
+        extra_fields = ['last_volume_history']
+
+    def get_field_names(self, declared_fields, info):
+        expanded_fields = super(SampleSerializer, self).get_field_names(declared_fields, info)
+        return expanded_fields + self.Meta.extra_fields
+
+    def get_last_volume_history(self, obj):
+        sorted_volume_histories = sorted(obj.volume_history, key=lambda k: k['date'])
+        return sorted_volume_histories[-1]['volume_value']
+
 
 
 class SampleExportSerializer(serializers.ModelSerializer):
