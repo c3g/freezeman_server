@@ -205,6 +205,8 @@ FiltersetFields = Dict[str, List[str]]
 
 _container_filterset_fields: FiltersetFields = {
     "id": PK_FILTERS,
+    "name": CATEGORICAL_FILTERS_LOOSE,
+    "barcode": CATEGORICAL_FILTERS_LOOSE,
     "kind": CATEGORICAL_FILTERS,
     "coordinates": ["exact"],
     "comment": FREE_TEXT_FILTERS,
@@ -215,6 +217,7 @@ _container_filterset_fields: FiltersetFields = {
 
 _sample_filterset_fields: FiltersetFields = {
     "id": PK_FILTERS,
+    "name": CATEGORICAL_FILTERS_LOOSE,
     "biospecimen_type": CATEGORICAL_FILTERS,
     "concentration": SCALAR_FILTERS,
     "depleted": ["exact"],
@@ -231,6 +234,10 @@ _sample_filterset_fields: FiltersetFields = {
     "individual": FK_FILTERS,  # PK
     "container": FK_FILTERS,  # PK
     **_prefix_keys("container__", _container_filterset_fields),
+}
+
+_sample_minimal_filterset_fields: FiltersetFields = {
+"name": CATEGORICAL_FILTERS_LOOSE,
 }
 
 _individual_filterset_fields: FiltersetFields = {
@@ -252,6 +259,7 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
     filterset_fields = {
         **_container_filterset_fields,
         **_prefix_keys("location__", _container_filterset_fields),
+        **_prefix_keys("samples__", _sample_minimal_filterset_fields),
     }
 
     template_action_list = [
