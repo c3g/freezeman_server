@@ -205,10 +205,10 @@ FiltersetFields = Dict[str, List[str]]
 
 _container_filterset_fields: FiltersetFields = {
     "id": PK_FILTERS,
-    "name": CATEGORICAL_FILTERS_LOOSE,
-    "barcode": CATEGORICAL_FILTERS_LOOSE,
+    "name": ["icontains"],
+    "barcode": ["icontains"],
     "kind": CATEGORICAL_FILTERS,
-    "coordinates": ["exact"],
+    "coordinates": ["exact", "icontains"],
     "comment": FREE_TEXT_FILTERS,
     "update_comment": FREE_TEXT_FILTERS,
     "location": NULLABLE_FK_FILTERS,
@@ -237,12 +237,12 @@ _sample_filterset_fields: FiltersetFields = {
 }
 
 _sample_minimal_filterset_fields: FiltersetFields = {
-"name": CATEGORICAL_FILTERS_LOOSE,
+    "name": CATEGORICAL_FILTERS_LOOSE,
 }
 
 _individual_filterset_fields: FiltersetFields = {
     "id": PK_FILTERS,
-    "label": PK_FILTERS,
+    "label": ["in", "icontains"],
     "taxon": CATEGORICAL_FILTERS,
     "sex": CATEGORICAL_FILTERS,
     "pedigree": CATEGORICAL_FILTERS_LOOSE,
