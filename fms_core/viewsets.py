@@ -318,8 +318,7 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
 
     @action(detail=False, methods=["get"])
     def list_export(self, _request):
-        containers_data = Container.objects.select_related("location").prefetch_related("children", "samples").all()
-        serializer = ContainerExportSerializer(containers_data, many=True)
+        serializer = ContainerExportSerializer(self.filter_queryset(self.get_queryset()), many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=["get"])
@@ -407,8 +406,7 @@ class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
 
     @action(detail=False, methods=["get"])
     def list_export(self, _request):
-        samples = Sample.objects.all().select_related("container", "individual")
-        serializer = SampleExportSerializer(samples, many=True)
+        serializer = SampleExportSerializer(self.filter_queryset(self.get_queryset()), many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
@@ -458,8 +456,7 @@ class IndividualViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def list_export(self, _request):
-        individuals = Individual.objects.all()
-        serializer = IndividualSerializer(individuals, many=True)
+        serializer = IndividualSerializer(self.filter_queryset(self.get_queryset()), many=True)
         return Response(serializer.data)
 
 
