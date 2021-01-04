@@ -158,7 +158,7 @@ class Sample(models.Model):
     # Computed properties for individuals
 
     @property
-    def individual_label(self) -> str:
+    def individual_name(self) -> str:
         return self.individual.name if self.individual else ""
 
     @property
