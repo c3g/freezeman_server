@@ -514,6 +514,7 @@ class IndividualViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
+
 # noinspection PyMethodMayBeStatic,PyUnusedLocal
 class QueryViewSet(viewsets.ViewSet):
     basename = "query"
