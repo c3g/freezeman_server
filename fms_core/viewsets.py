@@ -13,7 +13,7 @@ from tablib import Dataset
 from typing import Any, Dict, List, Tuple, Union
 
 from .fzy import score
-from .containers import ContainerSpec, CONTAINER_KIND_SPECS, PARENT_CONTAINER_KINDS
+from .containers import ContainerSpec, CONTAINER_KIND_SPECS, PARENT_CONTAINER_KINDS, SAMPLE_CONTAINER_KINDS
 from .models import Container, Sample, Individual
 from .resources import (
     ContainerResource,
@@ -323,11 +323,14 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
         """
         search_input = _request.GET.get("q")
         is_parent = _request.GET.get("parent") == 'true'
+        is_sample_holding = _request.GET.get("sample_holding") == 'true'
 
         query = Q(name__icontains=search_input)
         query.add(Q(id__icontains=search_input), Q.OR)
         if is_parent:
             query.add(Q(kind__in=PARENT_CONTAINER_KINDS), Q.AND)
+        if is_sample_holding:
+            query.add(Q(kind__in=SAMPLE_CONTAINER_KINDS), Q.AND)
 
         containers_data = Container.objects.filter(query)
         page = self.paginate_queryset(containers_data)
