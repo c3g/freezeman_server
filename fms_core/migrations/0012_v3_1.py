@@ -2,12 +2,14 @@
 
 from django.db import migrations, models
 from django.db.models import F
-from fms_core.models import Sample
 import django.utils.timezone
+
+from fms_core.models import Sample
 
 
 def update_creation_date_with_reception_date(apps, schema_editor):
     Sample.objects.all().update(creation_date=F('reception_date'))
+
 
 class Migration(migrations.Migration):
 
