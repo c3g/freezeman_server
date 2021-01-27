@@ -167,7 +167,7 @@ class SampleAdmin(AggregatedAdmin):
     )
 
     fieldsets = (
-        (None, {"fields": ("biospecimen_type", "name", "alias", "individual", "reception_date", "collection_site")}),
+        (None, {"fields": ("biospecimen_type", "name", "alias", "individual", "creation_date", "collection_site")}),
         ("Quantity Information", {"fields": ("volume_history", "concentration", "depleted")}),
         ("For Extracted Samples Only", {"fields": ("extracted_from", "volume_used")}),
         ("Location", {"fields": ("container", "coordinates")}),
