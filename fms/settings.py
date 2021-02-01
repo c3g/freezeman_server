@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '*c##1@2jo)b*_jk5+rdq%4r*sst+r&vhc^43ck900h-35fb-ly'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("FMS_DEBUG", "False").lower() == "true"
+DEBUG = os.environ.get("FMS_DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = [os.environ.get("FMS_HOST", "computationalgenomics.ca"), ".localhost"] if not DEBUG else []
+ALLOWED_HOSTS = [os.environ.get("FMS_HOST", "computationalgenomics.ca")] if not DEBUG else []
 
 INTERNAL_IPS = (
     "127.0.0.1",
