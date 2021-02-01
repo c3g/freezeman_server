@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '*c##1@2jo)b*_jk5+rdq%4r*sst+r&vhc^43ck900h-35fb-ly'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("FMS_DEBUG", "True").lower() == "true"
+DEBUG = os.environ.get("FMS_DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = [os.environ.get("FMS_HOST", "computationalgenomics.ca")] if not DEBUG else []
+ALLOWED_HOSTS = [os.environ.get("FMS_HOST", "computationalgenomics.ca"), ".localhost"] if not DEBUG else []
 
 INTERNAL_IPS = (
     "127.0.0.1",
@@ -136,6 +136,7 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework_csv.renderers.CSVRenderer',
     ),
+    'EXCEPTION_HANDLER': 'fms_core.exception_handler.fms_exception_handler',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100,
 }
