@@ -50,11 +50,12 @@ class IndividualSerializer(serializers.ModelSerializer):
 
 class SampleSerializer(serializers.ModelSerializer):
     container__name = serializers.CharField(read_only=True, source="container.name")
+    individual__name = serializers.CharField(read_only=True, source="individual.name")
 
     class Meta:
         model = Sample
         fields = "__all__"
-        extra_fields = ['container__name']
+        extra_fields = ['container__name', 'individual__name']
 
 class SampleExportSerializer(serializers.ModelSerializer):
     sample_name = serializers.CharField(source="name")
@@ -106,11 +107,12 @@ class NestedSampleSerializer(serializers.ModelSerializer):
     container = SimpleContainerSerializer(read_only=True)
     extracted_from = SampleSerializer(read_only=True)
     container__name = serializers.CharField(read_only=True, source="container.name")
+    individual__name = serializers.CharField(read_only=True, source="individual.name")
 
     class Meta:
         model = Sample
         fields = "__all__"
-        extra_fields = ['container__name']
+        extra_fields = ['container__name', 'individual__name']
 
 
 class VersionSerializer(serializers.ModelSerializer):
