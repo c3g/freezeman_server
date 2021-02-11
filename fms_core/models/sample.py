@@ -18,6 +18,7 @@ from ..utils import float_to_decimal, str_cast_and_normalize
 
 from .container import Container
 from .individual import Individual
+from .sample_kind import SampleKind
 
 from ._constants import BARCODE_NAME_FIELD_LENGTH
 from ._utils import add_error as _add_error
@@ -99,6 +100,10 @@ class Sample(models.Model):
         BIOSPECIMEN_TYPE_SALIVA: TISSUE_SOURCE_SALIVA,
         BIOSPECIMEN_TYPE_SWAB: TISSUE_SOURCE_SWAB,
     }
+
+    sample_kind = models.ForeignKey(SampleKind, on_delete=models.PROTECT, related_name="samples",
+                                  help_text="Biological material collected from study subject "
+                                                  "during the conduct of a genomic study project.")
 
     biospecimen_type = models.CharField(max_length=200, choices=BIOSPECIMEN_TYPE_CHOICES,
                                         help_text="Biological material collected from study subject "

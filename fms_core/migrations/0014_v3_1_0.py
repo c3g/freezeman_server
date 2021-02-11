@@ -1,6 +1,5 @@
 from django.db import migrations, models
-
-SAMPLE_KINDS = ['DNA', 'RNA', 'BLOOD', 'CELLS', 'EXPECTORATION', 'GARGLE', 'PLASMA', 'SALIVA', 'SWAB']
+from fms_core.models._constants import SAMPLE_KINDS
 
 
 class Migration(migrations.Migration):
@@ -8,7 +7,7 @@ class Migration(migrations.Migration):
     def create_sample_kinds(apps, schema_editor):
         SampleKind = apps.get_model("fms_core", "SampleKind")
         for kind in SAMPLE_KINDS:
-            SampleKind.objects.create(name=kind, molecule_ontology_curie=kind)
+            SampleKind.objects.create(name=kind)
 
     def copy_samples_kinds(apps, schema_editor):
         Sample = apps.get_model("fms_core", "Sample")
@@ -30,14 +29,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='SampleKind',
             fields=[
-                ('name', models.CharField(choices=[('DNA', 'DNA'), ('RNA', 'RNA'), ('BLOOD', 'BLOOD'), ('CELLS', 'CELLS'),
-                                                   ('EXPECTORATION', 'EXPECTORATION'), ('GARGLE', 'GARGLE'), ('PLASMA', 'PLASMA'),
-                                                   ('SALIVA', 'SALIVA'), ('SWAB', 'SWAB')],
+                ('name', models.CharField(choices=list((kind, kind) for kind in SAMPLE_KINDS),
                                           help_text='Biological material collected from study subject during the conduct of a genomic study project.',
                                           max_length=200,
                                           unique=True)
                  ),
-                ('molecule_ontology_curie', models.CharField(help_text='SO ontology term to describe an molecule, such as ‘SO:0000991’ (‘genomic_DNA’)', max_length=20, unique=True)),
+                ('molecule_ontology_curie', models.CharField(help_text='SO ontology term to describe an molecule, such as ‘SO:0000991’ (‘genomic_DNA’)', max_length=20)),
             ],
         ),
         migrations.AddField(
