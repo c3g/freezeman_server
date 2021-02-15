@@ -21,10 +21,20 @@ __all__ = [
 class ContainerSerializer(serializers.ModelSerializer):
     children = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     samples = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    nb_samples = serializers.SerializerMethodField()
 
     class Meta:
         model = Container
         fields = "__all__"
+
+    def get_nb_samples(self, obj):
+        nb = 0
+        if len(obj.children.all()) > 0:
+            for child in obj.children.all():
+                nb += len(child.samples.all())
+        else:
+            nb = len(obj.samples.all())
+        return nb
 
 
 class SimpleContainerSerializer(serializers.ModelSerializer):
