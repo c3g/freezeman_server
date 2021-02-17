@@ -10,6 +10,7 @@ from .models import (
     ContainerMove,
     ContainerRename,
     Sample,
+    SampleKind,
     SampleUpdate,
     ExtractedSample,
     Individual,
@@ -20,6 +21,7 @@ from .resources import (
     ContainerMoveResource,
     ContainerRenameResource,
     SampleResource,
+    SampleKindResource,
     SampleUpdateResource,
     ExtractionResource,
     IndividualResource,
@@ -206,6 +208,44 @@ class ExtractedSampleAdmin(CustomImportMixin, admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+
+
+class SampleKindForm(forms.ModelForm):
+    class Meta:
+        model = SampleKind
+        exclude = ()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if kwargs.get("instance"):
+            # If we're in edit mode
+            return
+
+
+@admin.register(SampleKind)
+class SampleKindAdmin(AggregatedAdmin):
+    form = SampleKindForm
+    resource_class = SampleKindResource
+
+    list_display = (
+        "name",
+        "molecule_ontology_curie"
+    )
+
+    list_filter = (
+        "name",
+        "molecule_ontology_curie"
+    )
+
+    search_fields = (
+        "name",
+        "molecule_ontology_curie"
+    )
+
+    fieldsets = (
+        (None, {"fields": ("name", "molecule_ontology_curie")}),
+    )
 
 class IndividualForm(forms.ModelForm):
     class Meta:
