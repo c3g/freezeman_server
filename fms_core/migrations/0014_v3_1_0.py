@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(help_text='Biological material collected from study subject during the conduct of a genomic study project.', max_length=200)),
-                ('molecule_ontology_curie', models.CharField(help_text='SO ontology term to describe an molecule, such as ‘SO:0000991’ (‘genomic_DNA’)', max_length=20)),
+                ('molecule_ontology_curie', models.CharField(blank=True, help_text='SO ontology term to describe an molecule, such as ‘SO:0000991’ (‘genomic_DNA’)', max_length=20)),
             ],
         ),
         migrations.AddField(
@@ -49,5 +49,23 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             copy_samples_kinds,
             reverse_code=migrations.RunPython.noop,
+        ),
+        migrations.RemoveField(
+            model_name='sample',
+            name='biospecimen_type',
+        ),
+        migrations.AlterField(
+            model_name='sample',
+            name='sample_kind',
+            field=models.ForeignKey(
+                help_text='Biological material collected from study subject during the conduct of a genomic study project.',
+                on_delete=django.db.models.deletion.PROTECT, to='fms_core.samplekind'),
+        ),
+        migrations.AlterField(
+            model_name='samplekind',
+            name='name',
+            field=models.CharField(
+                help_text='Biological material collected from study subject during the conduct of a genomic study project.',
+                max_length=200, unique=True),
         ),
     ]

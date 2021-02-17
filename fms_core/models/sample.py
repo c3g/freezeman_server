@@ -101,12 +101,12 @@ class Sample(models.Model):
         BIOSPECIMEN_TYPE_SWAB: TISSUE_SOURCE_SWAB,
     }
 
-    sample_kind = models.ForeignKey(SampleKind, blank=True, null=True, on_delete=models.PROTECT, help_text="Biological material collected from study subject "
+    sample_kind = models.ForeignKey(SampleKind, on_delete=models.PROTECT, help_text="Biological material collected from study subject "
                                                   "during the conduct of a genomic study project.")
 
-    biospecimen_type = models.CharField(max_length=200, choices=BIOSPECIMEN_TYPE_CHOICES,
-                                        help_text="Biological material collected from study subject "
-                                                  "during the conduct of a genomic study project.")
+    # biospecimen_type = models.CharField(max_length=200, choices=BIOSPECIMEN_TYPE_CHOICES,
+    #                                     help_text="Biological material collected from study subject "
+    #                                               "during the conduct of a genomic study project.")
     name = models.CharField(max_length=BARCODE_NAME_FIELD_LENGTH, validators=[name_validator],
                             help_text="Sample name.")
     alias = models.CharField(max_length=200, blank=True, help_text="Alternative sample name given by the "
