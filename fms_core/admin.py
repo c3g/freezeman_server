@@ -140,7 +140,6 @@ class SampleAdmin(AggregatedAdmin):
     resource_class = SampleResource
 
     list_display = (
-        "biospecimen_type",
         "sample_kind",
         "name",
         "alias",
@@ -160,7 +159,6 @@ class SampleAdmin(AggregatedAdmin):
     )
 
     list_filter = (
-        "biospecimen_type",
         "sample_kind",
         "depleted",
     )
@@ -172,7 +170,7 @@ class SampleAdmin(AggregatedAdmin):
     )
 
     fieldsets = (
-        (None, {"fields": ("biospecimen_type", "sample_kind", "name", "alias", "individual", "reception_date", "collection_site")}),
+        (None, {"fields": ("sample_kind", "name", "alias", "individual", "reception_date", "collection_site")}),
         ("Quantity Information", {"fields": ("volume_history", "concentration", "depleted")}),
         ("For Extracted Samples Only", {"fields": ("extracted_from", "volume_used")}),
         ("Location", {"fields": ("container", "coordinates")}),

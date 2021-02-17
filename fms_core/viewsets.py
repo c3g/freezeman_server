@@ -238,7 +238,7 @@ _user_filterset_fields: FiltersetFields = {
 _sample_filterset_fields: FiltersetFields = {
     "id": PK_FILTERS,
     "name": CATEGORICAL_FILTERS_LOOSE,
-    "biospecimen_type": CATEGORICAL_FILTERS,
+    "sample_kind": CATEGORICAL_FILTERS,
     "concentration": SCALAR_FILTERS,
     "depleted": ["exact"],
     "collection_site": CATEGORICAL_FILTERS_LOOSE,

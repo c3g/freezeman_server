@@ -29,7 +29,7 @@ __all__ = ["SampleResource"]
 
 class SampleResource(GenericResource):
     # Simple model fields
-    biospecimen_type = Field(attribute='biospecimen_type', column_name='Biospecimen Type')
+    sample_kind = Field(attribute='sample_kind', column_name='Sample Kind')
     name = Field(attribute='name', column_name='Sample Name')
     alias = Field(attribute='alias', column_name='Alias')
     experimental_group = Field(attribute='experimental_group', column_name='Experimental Group', widget=JSONWidget())
@@ -84,7 +84,7 @@ class SampleResource(GenericResource):
         model = Sample
         import_id_fields = ("container__barcode", "context_sensitive_coordinates")
         fields = (
-            "biospecimen_type",
+            "sample_kind",
             "name",
             "alias",
             "concentration",
@@ -93,7 +93,7 @@ class SampleResource(GenericResource):
         )
         excluded = ("volume_history", "individual", "depleted", "container")
         export_order = (
-            "biospecimen_type",
+            "sample_kind",
             "name",
             "alias",
             "cohort",

@@ -77,7 +77,7 @@ class SampleExportSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Sample
-        fields = ('biospecimen_type', 'sample_name', 'alias', 'cohort', 'taxon',
+        fields = ('sample_kind', 'sample_name', 'alias', 'cohort', 'taxon',
                   'container_kind', 'container_name', 'container_barcode', 'location_barcode', 'location_coord',
                   'individual_id', 'sex', 'pedigree', 'mother_name', 'father_name',
                   'current_volume', 'concentration', 'collection_site', 'tissue_source', 'reception_date', 'phenotype',
