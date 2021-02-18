@@ -6,6 +6,7 @@ from .viewsets import (
     IndividualViewSet,
     QueryViewSet,
     SampleViewSet,
+    SampleKindViewSet,
     UserViewSet,
     VersionViewSet,
 )
@@ -15,6 +16,7 @@ __all__ = ["router"]
 router = routers.DefaultRouter()
 router.register(r"container-kinds", ContainerKindViewSet, basename="container-kind")
 router.register(r"containers", ContainerViewSet)
+router.register(r"sample-kinds", SampleKindViewSet, basename="sample-kind")
 router.register(r"samples", SampleViewSet)
 router.register(r"individuals", IndividualViewSet)
 router.register(r"query", QueryViewSet, basename="query")

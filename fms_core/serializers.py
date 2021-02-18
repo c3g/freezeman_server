@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from reversion.models import Version
 
-from .models import Container, Sample, Individual
+from .models import Container, Sample, Individual, SampleKind
 
 
 __all__ = [
@@ -10,6 +10,7 @@ __all__ = [
     "ContainerExportSerializer",
     "SimpleContainerSerializer",
     "IndividualSerializer",
+    "SampleKindSerializer",
     "SampleSerializer",
     "SampleExportSerializer",
     "NestedSampleSerializer",
@@ -45,6 +46,12 @@ class ContainerExportSerializer(serializers.ModelSerializer):
 class IndividualSerializer(serializers.ModelSerializer):
     class Meta:
         model = Individual
+        fields = "__all__"
+
+
+class SampleKindSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SampleKind
         fields = "__all__"
 
 
