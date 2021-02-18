@@ -259,22 +259,13 @@ class Sample(models.Model):
 
         self.normalize()
 
-        # biospecimen_type_choices = (Sample.BIOSPECIMEN_TYPE_NA_CHOICES if self.extracted_from
-        #                             else Sample.BIOSPECIMEN_TYPE_CHOICES)
-        # if self.biospecimen_type not in frozenset(c[0] for c in biospecimen_type_choices):
-        #     add_error(
-        #         "biospecimen_type",
-        #         (f"Biospecimen type {self.biospecimen_type} not valid for "
-        #          f"{' extracted' if self.extracted_from else ''} sample {self.name}"),
-        #     )
-
         if self.extracted_from:
-            extracted_from_sample_kind = self.extracted_from.sample_kind
+            extracted_from_sample_kind = self.extracted_from.sample_kind.name
             # extracted_from_sample_kind = self.extracted_from.biospecimen_type
             if extracted_from_sample_kind in Sample.BIOSPECIMEN_TYPES_NA:
                 add_error(
                     "extracted_from",
-                    f"Extraction process cannot be run on sample of type {self.extracted_from.sample_kind}"
+                    f"Extraction process cannot be run on sample of type {extracted_from_sample_kind}"
                 )
 
             else:
@@ -303,12 +294,12 @@ class Sample(models.Model):
 
         # Check concentration fields given biospecimen_type
 
-        if self.sample_kind in Sample.BIOSPECIMEN_TYPES_CONC_REQUIRED and self.concentration is None:
+        if self.sample_kind.name in Sample.BIOSPECIMEN_TYPES_CONC_REQUIRED and self.concentration is None:
             add_error("concentration", "Concentration must be specified if the biospecimen_type is DNA")
 
         # Check tissue source given extracted_from
 
-        if self.tissue_source and self.sample_kind not in Sample.BIOSPECIMEN_TYPES_NA:
+        if self.tissue_source and self.sample_kind.name not in Sample.BIOSPECIMEN_TYPES_NA:
             add_error("tissue_source", "Tissue source can only be specified for a nucleic acid sample.")
 
         # Validate container consistency
