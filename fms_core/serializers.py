@@ -55,6 +55,7 @@ class SampleSerializer(serializers.ModelSerializer):
 
 
 class SampleExportSerializer(serializers.ModelSerializer):
+    sample_kind = serializers.CharField(read_only=True, source="sample_kind.name")
     sample_name = serializers.CharField(source="name")
     individual_id = serializers.CharField(read_only=True, source="individual.name")
     taxon = serializers.CharField(read_only=True, source="individual.taxon")
@@ -86,8 +87,7 @@ class SampleExportSerializer(serializers.ModelSerializer):
             return obj.container.location.barcode
 
     def get_current_volume(self, obj):
-        sorted_volume_histories = sorted(obj.volume_history, key=lambda k: k['date'])
-        return sorted_volume_histories[-1]['volume_value']
+        return obj.volume
 
     def get_father_name(self, obj):
         father = '' if obj.individual.father is None else obj.individual.father.name
