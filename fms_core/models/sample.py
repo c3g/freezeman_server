@@ -103,10 +103,6 @@ class Sample(models.Model):
 
     sample_kind = models.ForeignKey(SampleKind, on_delete=models.PROTECT, help_text="Biological material collected from study subject "
                                                   "during the conduct of a genomic study project.")
-
-    # biospecimen_type = models.CharField(max_length=200, choices=BIOSPECIMEN_TYPE_CHOICES,
-    #                                     help_text="Biological material collected from study subject "
-    #                                               "during the conduct of a genomic study project.")
     name = models.CharField(max_length=BARCODE_NAME_FIELD_LENGTH, validators=[name_validator],
                             help_text="Sample name.")
     alias = models.CharField(max_length=200, blank=True, help_text="Alternative sample name given by the "
@@ -261,7 +257,6 @@ class Sample(models.Model):
 
         if self.extracted_from:
             extracted_from_sample_kind = self.extracted_from.sample_kind.name
-            # extracted_from_sample_kind = self.extracted_from.biospecimen_type
             if extracted_from_sample_kind in Sample.BIOSPECIMEN_TYPES_NA:
                 add_error(
                     "extracted_from",
