@@ -29,7 +29,7 @@ __all__ = ["SampleResource"]
 
 class SampleResource(GenericResource):
     # Simple model fields
-    sample_kind = Field(attribute='sample_kind_name', column_name='Sample Kind')
+    sample_kind = Field(column_name='Sample Kind')
     name = Field(attribute='name', column_name='Sample Name')
     alias = Field(attribute='alias', column_name='Alias')
     experimental_group = Field(attribute='experimental_group', column_name='Experimental Group', widget=JSONWidget())
@@ -190,7 +190,7 @@ class SampleResource(GenericResource):
 
         normalized_container_kind = get_normalized_str(data, "Container Kind").lower()
 
-        if field.attribute == "sample_kind_name":
+        if field.attribute == "sample_kind":
             obj.sample_kind = SampleKind.objects.get(name=data["Sample Kind"])
 
         elif field.attribute == "container_barcode" and normalized_container_kind in SAMPLE_CONTAINER_KINDS:

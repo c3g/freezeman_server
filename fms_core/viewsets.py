@@ -246,7 +246,7 @@ _sample_kind_filterset_fields: FiltersetFields = {
 _sample_filterset_fields: FiltersetFields = {
     "id": PK_FILTERS,
     "name": CATEGORICAL_FILTERS_LOOSE,
-    "sample_kind": CATEGORICAL_FILTERS,
+    "sample_kind": FK_FILTERS,
     "concentration": SCALAR_FILTERS,
     "depleted": ["exact"],
     "collection_site": CATEGORICAL_FILTERS_LOOSE,

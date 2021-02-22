@@ -255,6 +255,15 @@ class Sample(models.Model):
 
         self.normalize()
 
+        sample_kind_choices = (Sample.BIOSPECIMEN_TYPE_NA_CHOICES if self.extracted_from
+                                    else Sample.BIOSPECIMEN_TYPE_CHOICES)
+        if self.sample_kind.name not in frozenset(c[0] for c in sample_kind_choices):
+            add_error(
+                "sample_kind",
+                (f"Sample Kind name {self.sample_kind.name} not valid for "
+                 f"{' extracted' if self.extracted_from else ''} sample {self.name}"),
+            )
+
         if self.extracted_from:
             extracted_from_sample_kind = self.extracted_from.sample_kind.name
             if extracted_from_sample_kind in Sample.BIOSPECIMEN_TYPES_NA:

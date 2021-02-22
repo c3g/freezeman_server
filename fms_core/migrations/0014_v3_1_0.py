@@ -4,7 +4,7 @@ from django.db import migrations, models
 import django.db.models.deletion
 import json
 
-from fms_core.models._constants import SAMPLE_KINDS
+SAMPLE_KINDS = ['DNA', 'RNA', 'BLOOD', 'CELLS', 'EXPECTORATION', 'GARGLE', 'PLASMA', 'SALIVA', 'SWAB']
 
 class Migration(migrations.Migration):
     def create_sample_kinds(apps, schema_editor):
