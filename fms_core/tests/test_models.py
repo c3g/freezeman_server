@@ -176,7 +176,7 @@ class ExtractedSampleTest(TestCase):
         self.parent_sample = Sample.objects.create(**create_sample(self.sample_kind_BLOOD, self.valid_individual, self.valid_container,
                                                                    name="test_sample_10"))
         self.invalid_parent_sample = Sample.objects.create(**create_sample(
-            sample_kind=self.sample_kind_BLOOD,
+            sample_kind=self.sample_kind_DNA,
             individual=self.valid_individual,
             container=self.tube_container_2,
             name="test_sample_11",
@@ -240,7 +240,7 @@ class ExtractedSampleTest(TestCase):
                                                                 individual=self.valid_individual,
                                                                 name="test_extracted_sample_11"))
             except ValidationError as e:
-                self.assertIn("tissue_source", e.message_dict)
+                self.assertIn("extracted_from", e.message_dict)
                 raise e
 
     def test_no_container(self):
