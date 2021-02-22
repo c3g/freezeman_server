@@ -21,7 +21,7 @@ from ..utils import (
 
 
 class ExtractionResource(GenericResource):
-    sample_kind = Field(column_name='Extraction Type')
+    sample_kind = Field(attribute="sample_kind_name", column_name='Extraction Type')
     volume_used = Field(attribute='volume_used', column_name='Volume Used (uL)', widget=DecimalWidget())
     # parent sample container
     sample_container = Field(column_name='Container Barcode')
@@ -80,7 +80,7 @@ class ExtractionResource(GenericResource):
             # Computed field, skip importing it.
             return
 
-        if field.attribute == "sample_kind":
+        if field.attribute == "sample_kind_name":
             obj.sample_kind = SampleKind.objects.get(name=data["Extraction Type"])
 
         if field.attribute == 'volume_history':
