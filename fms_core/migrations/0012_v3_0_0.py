@@ -16,7 +16,7 @@ def change_individual_label_field_in_versions(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('fms_core', '0010_v2_6_1'),
+        ('fms_core', '0011_v2_6_2'),
     ]
 
     operations = [

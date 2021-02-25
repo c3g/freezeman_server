@@ -18,6 +18,7 @@ from ..utils import float_to_decimal, str_cast_and_normalize
 
 from .container import Container
 from .individual import Individual
+from .sample_kind import SampleKind
 
 from ._constants import BARCODE_NAME_FIELD_LENGTH
 from ._utils import add_error as _add_error
@@ -33,6 +34,10 @@ class Sample(models.Model):
     BIOSPECIMEN_TYPE_DNA = "DNA"
     BIOSPECIMEN_TYPE_RNA = "RNA"
     BIOSPECIMEN_TYPE_BLOOD = "BLOOD"
+    BIOSPECIMEN_TYPE_CELLS = "CELLS"
+    BIOSPECIMEN_TYPE_EXPECTORATION = "EXPECTORATION"
+    BIOSPECIMEN_TYPE_GARGLE = "GARGLE"
+    BIOSPECIMEN_TYPE_PLASMA = "PLASMA"
     BIOSPECIMEN_TYPE_SALIVA = "SALIVA"
     BIOSPECIMEN_TYPE_SWAB = "SWAB"
 
@@ -51,28 +56,36 @@ class Sample(models.Model):
     BIOSPECIMEN_TYPE_CHOICES = (
         *BIOSPECIMEN_TYPE_NA_CHOICES,
         (BIOSPECIMEN_TYPE_BLOOD, BIOSPECIMEN_TYPE_BLOOD),
+        (BIOSPECIMEN_TYPE_CELLS, BIOSPECIMEN_TYPE_CELLS),
+        (BIOSPECIMEN_TYPE_EXPECTORATION, BIOSPECIMEN_TYPE_EXPECTORATION),
+        (BIOSPECIMEN_TYPE_GARGLE, BIOSPECIMEN_TYPE_GARGLE),
+        (BIOSPECIMEN_TYPE_PLASMA, BIOSPECIMEN_TYPE_PLASMA),
         (BIOSPECIMEN_TYPE_SALIVA, BIOSPECIMEN_TYPE_SALIVA),
         (BIOSPECIMEN_TYPE_SWAB, BIOSPECIMEN_TYPE_SWAB),
     )
 
     TISSUE_SOURCE_BLOOD = "Blood"
+    TISSUE_SOURCE_CELLS = "Cells"
+    TISSUE_SOURCE_EXPECTORATION = "Expectoration"
+    TISSUE_SOURCE_GARGLE = "Gargle"
+    TISSUE_SOURCE_PLASMA = "Plasma"
     TISSUE_SOURCE_SALIVA = "Saliva"
     TISSUE_SOURCE_SWAB = "Swab"
     TISSUE_SOURCE_TUMOR = "Tumor"
-    TISSUE_SOURCE_PLASMA = "Plasma"
     TISSUE_SOURCE_BUFFY_COAT = "Buffy coat"
     TISSUE_SOURCE_TAIL = "Tail"
-    TISSUE_SOURCE_CELLS = "Cells"
 
     TISSUE_SOURCE_CHOICES = (
         (TISSUE_SOURCE_BLOOD, TISSUE_SOURCE_BLOOD),
+        (TISSUE_SOURCE_CELLS, TISSUE_SOURCE_CELLS),
+        (TISSUE_SOURCE_EXPECTORATION, TISSUE_SOURCE_EXPECTORATION),
+        (TISSUE_SOURCE_GARGLE, TISSUE_SOURCE_GARGLE),
+        (TISSUE_SOURCE_PLASMA, TISSUE_SOURCE_PLASMA),
         (TISSUE_SOURCE_SALIVA, TISSUE_SOURCE_SALIVA),
         (TISSUE_SOURCE_SWAB, TISSUE_SOURCE_SWAB),
         (TISSUE_SOURCE_TUMOR, TISSUE_SOURCE_TUMOR),
-        (TISSUE_SOURCE_PLASMA, TISSUE_SOURCE_PLASMA),
         (TISSUE_SOURCE_BUFFY_COAT, TISSUE_SOURCE_BUFFY_COAT),
         (TISSUE_SOURCE_TAIL, TISSUE_SOURCE_TAIL),
-        (TISSUE_SOURCE_CELLS, TISSUE_SOURCE_CELLS),
     )
 
     # Map between biospecimen type and tissue source; used when processing
@@ -80,12 +93,15 @@ class Sample(models.Model):
     # sample's biospecimen type.
     BIOSPECIMEN_TYPE_TO_TISSUE_SOURCE = {
         BIOSPECIMEN_TYPE_BLOOD: TISSUE_SOURCE_BLOOD,
+        BIOSPECIMEN_TYPE_CELLS: TISSUE_SOURCE_CELLS,
+        BIOSPECIMEN_TYPE_EXPECTORATION: TISSUE_SOURCE_EXPECTORATION,
+        BIOSPECIMEN_TYPE_GARGLE: TISSUE_SOURCE_GARGLE,
+        BIOSPECIMEN_TYPE_PLASMA: TISSUE_SOURCE_PLASMA,
         BIOSPECIMEN_TYPE_SALIVA: TISSUE_SOURCE_SALIVA,
         BIOSPECIMEN_TYPE_SWAB: TISSUE_SOURCE_SWAB,
     }
 
-    biospecimen_type = models.CharField(max_length=200, choices=BIOSPECIMEN_TYPE_CHOICES,
-                                        help_text="Biological material collected from study subject "
+    sample_kind = models.ForeignKey(SampleKind, on_delete=models.PROTECT, help_text="Biological material collected from study subject "
                                                   "during the conduct of a genomic study project.")
     name = models.CharField(max_length=BARCODE_NAME_FIELD_LENGTH, validators=[name_validator],
                             help_text="Sample name.")
@@ -96,7 +112,7 @@ class Sample(models.Model):
     volume_history = models.JSONField("volume history in µL", validators=[VOLUME_VALIDATOR],
                                       help_text="Volume of the sample in µL.")
 
-    # Concentration is REQUIRED if biospecimen_type in {DNA, RNA}.
+    # Concentration is REQUIRED if sample kind name in {DNA, RNA}.
     concentration = models.DecimalField(
         "concentration in ng/µL",
         max_digits=20,
@@ -239,25 +255,26 @@ class Sample(models.Model):
 
         self.normalize()
 
-        biospecimen_type_choices = (Sample.BIOSPECIMEN_TYPE_NA_CHOICES if self.extracted_from
+        sample_kind_choices = (Sample.BIOSPECIMEN_TYPE_NA_CHOICES if self.extracted_from
                                     else Sample.BIOSPECIMEN_TYPE_CHOICES)
-        if self.biospecimen_type not in frozenset(c[0] for c in biospecimen_type_choices):
+        if self.sample_kind.name not in frozenset(c[0] for c in sample_kind_choices):
             add_error(
-                "biospecimen_type",
-                (f"Biospecimen type {self.biospecimen_type} not valid for "
+                "sample_kind",
+                (f"Sample Kind name {self.sample_kind.name} not valid for "
                  f"{' extracted' if self.extracted_from else ''} sample {self.name}"),
             )
 
         if self.extracted_from:
-            if self.extracted_from.biospecimen_type in Sample.BIOSPECIMEN_TYPES_NA:
+            extracted_from_sample_kind = self.extracted_from.sample_kind.name
+            if extracted_from_sample_kind in Sample.BIOSPECIMEN_TYPES_NA:
                 add_error(
                     "extracted_from",
-                    f"Extraction process cannot be run on sample of type {self.extracted_from.biospecimen_type}"
+                    f"Extraction process cannot be run on sample of type {extracted_from_sample_kind}"
                 )
 
             else:
                 original_biospecimen_type = Sample.BIOSPECIMEN_TYPE_TO_TISSUE_SOURCE[
-                    self.extracted_from.biospecimen_type]
+                    extracted_from_sample_kind]
                 if self.tissue_source != original_biospecimen_type:
                     add_error(
                         "tissue_source",
@@ -281,12 +298,12 @@ class Sample(models.Model):
 
         # Check concentration fields given biospecimen_type
 
-        if self.biospecimen_type in Sample.BIOSPECIMEN_TYPES_CONC_REQUIRED and self.concentration is None:
+        if self.sample_kind.name in Sample.BIOSPECIMEN_TYPES_CONC_REQUIRED and self.concentration is None:
             add_error("concentration", "Concentration must be specified if the biospecimen_type is DNA")
 
         # Check tissue source given extracted_from
 
-        if self.tissue_source and self.biospecimen_type not in Sample.BIOSPECIMEN_TYPES_NA:
+        if self.tissue_source and self.sample_kind.name not in Sample.BIOSPECIMEN_TYPES_NA:
             add_error("tissue_source", "Tissue source can only be specified for a nucleic acid sample.")
 
         # Validate container consistency

@@ -1,12 +1,13 @@
 import json
 
 from collections import Counter
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth.models import User, Group
 from django.db.models import Count, Q
 from django.http.response import HttpResponseNotFound, HttpResponseBadRequest
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated, DjangoModelPermissions
 from rest_framework.response import Response
 from reversion.models import Version
 from tablib import Dataset
@@ -14,7 +15,7 @@ from typing import Any, Dict, List, Tuple, Union
 
 from .fzy import score
 from .containers import ContainerSpec, CONTAINER_KIND_SPECS, PARENT_CONTAINER_KINDS, SAMPLE_CONTAINER_KINDS
-from .models import Container, Sample, Individual
+from .models import Container, Sample, Individual, SampleKind
 from .resources import (
     ContainerResource,
     ContainerMoveResource,
@@ -26,12 +27,14 @@ from .resources import (
 from .serializers import (
     ContainerSerializer,
     ContainerExportSerializer,
+    SampleKindSerializer,
     SampleSerializer,
     SampleExportSerializer,
     NestedSampleSerializer,
     IndividualSerializer,
     VersionSerializer,
     UserSerializer,
+    GroupSerializer,
 )
 from .template_paths import (
     CONTAINER_CREATION_TEMPLATE,
@@ -48,12 +51,14 @@ __all__ = [
     "IndividualViewSet",
     "QueryViewSet",
     "SampleViewSet",
+    "SampleKindViewSet",
     "UserViewSet",
+    "GroupViewSet",
     "VersionViewSet",
 ]
 
 
-FREE_TEXT_FILTERS = ["contains", "icontains", "exact"]
+FREE_TEXT_FILTERS = ["contains", "icontains", "startswith"]
 CATEGORICAL_FILTERS = ["exact", "in"]
 CATEGORICAL_FILTERS_LOOSE = [*CATEGORICAL_FILTERS, *FREE_TEXT_FILTERS]
 FK_FILTERS = CATEGORICAL_FILTERS
@@ -158,12 +163,12 @@ class TemplateActionsMixin:
             "valid": not (result.has_errors() or result.has_validation_errors()),
             "base_errors": [{
                 "error": str(e.error),
-                "traceback": e.traceback,
+                "traceback": e.traceback if settings.DEBUG else "",
             } for e in result.base_errors],
             "rows": [{
                 "errors": [{
                     "error": str(e.error),
-                    "traceback": e.traceback,
+                    "traceback": e.traceback if settings.DEBUG else "",
                 } for e in r.errors],
                 "validation_error": r.validation_error,
                 "diff": r.diff,
@@ -199,6 +204,9 @@ class TemplateActionsMixin:
 def _prefix_keys(prefix: str, d: Dict[str, Any]) -> Dict[str, Any]:
     return {prefix + k: v for k, v in d.items()}
 
+def _list_keys(d: Dict[str, Any]) -> Dict[str, Any]:
+    return [k  for k, v in d.items()]
+
 
 FiltersetFields = Dict[str, List[str]]
 
@@ -214,11 +222,37 @@ _container_filterset_fields: FiltersetFields = {
     "location": NULLABLE_FK_FILTERS,
 }
 
+_individual_filterset_fields: FiltersetFields = {
+    "id": PK_FILTERS,
+    "name": CATEGORICAL_FILTERS_LOOSE,
+    "taxon": CATEGORICAL_FILTERS,
+    "sex": CATEGORICAL_FILTERS,
+    "pedigree": CATEGORICAL_FILTERS_LOOSE,
+    "cohort": CATEGORICAL_FILTERS_LOOSE,
+
+    "mother": NULLABLE_FK_FILTERS,
+    "father": NULLABLE_FK_FILTERS,
+}
+
+_user_filterset_fields: FiltersetFields = {
+    "username": FREE_TEXT_FILTERS,
+    "email": FREE_TEXT_FILTERS,
+}
+  
+_group_filterset_fields: FiltersetFields = {
+    "name": FREE_TEXT_FILTERS,
+
+}
+  
+_sample_kind_filterset_fields: FiltersetFields = {
+    "id": PK_FILTERS,
+    "name": CATEGORICAL_FILTERS_LOOSE,
+}
 
 _sample_filterset_fields: FiltersetFields = {
     "id": PK_FILTERS,
     "name": CATEGORICAL_FILTERS_LOOSE,
-    "biospecimen_type": CATEGORICAL_FILTERS,
+    "sample_kind": FK_FILTERS,
     "concentration": SCALAR_FILTERS,
     "depleted": ["exact"],
     "collection_site": CATEGORICAL_FILTERS_LOOSE,
@@ -233,31 +267,14 @@ _sample_filterset_fields: FiltersetFields = {
     "extracted_from": NULLABLE_FK_FILTERS,  # PK
     "individual": FK_FILTERS,  # PK
     "container": FK_FILTERS,  # PK
+    **_prefix_keys("sample_kind__", _sample_kind_filterset_fields),
     **_prefix_keys("container__", _container_filterset_fields),
+    **_prefix_keys("individual__", _individual_filterset_fields),
 }
 
 _sample_minimal_filterset_fields: FiltersetFields = {
     "name": CATEGORICAL_FILTERS_LOOSE,
 }
-
-_individual_filterset_fields: FiltersetFields = {
-    "id": PK_FILTERS,
-    "name": ["in", "icontains", "exact"],
-    "taxon": CATEGORICAL_FILTERS,
-    "sex": CATEGORICAL_FILTERS,
-    "pedigree": CATEGORICAL_FILTERS_LOOSE,
-    "cohort": CATEGORICAL_FILTERS_LOOSE,
-
-    "mother": NULLABLE_FK_FILTERS,
-    "father": NULLABLE_FK_FILTERS,
-}
-
-_user_filterset_fields: FiltersetFields = {
-    "username": FREE_TEXT_FILTERS,
-    "email": FREE_TEXT_FILTERS,
-}
-
-
 
 class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
     queryset = Container.objects.select_related("location").prefetch_related("children", "samples").all()
@@ -399,13 +416,22 @@ class ContainerViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
         return versions_detail(self.get_object())
 
 
+class SampleKindViewSet(viewsets.ModelViewSet):
+    queryset = SampleKind.objects.all()
+    serializer_class = SampleKindSerializer
+    pagination_class = None
+    permission_classes = [AllowAny]
+
+
 class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
-    queryset = Sample.objects.all().select_related("individual", "container")
+    queryset = Sample.objects.all().select_related("individual", "container", "sample_kind")
+    ordering_fields = (
+        *_list_keys(_sample_filterset_fields),
+    )
 
     filterset_fields = {
         **_sample_filterset_fields,
         **_prefix_keys("extracted_from__", _sample_filterset_fields),
-        **_prefix_keys("individual__", _individual_filterset_fields),
     }
 
     template_action_list = [
@@ -439,7 +465,6 @@ class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
             return NestedSampleSerializer
         return SampleSerializer
 
-
     def get_renderer_context(self):
         context = super().get_renderer_context()
         if self.action == 'list_export':
@@ -447,7 +472,6 @@ class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
             context['header'] = fields
             context['labels'] = {i: i.replace('_', ' ').capitalize() for i in fields}
         return context
-
 
     @action(detail=False, methods=["get"])
     def list_export(self, _request):
@@ -487,12 +511,14 @@ class SampleViewSet(viewsets.ModelViewSet, TemplateActionsMixin):
         for eg in Sample.objects.values_list("experimental_group", flat=True):
             experimental_groups.update(eg)
 
+        sample_kind_names_by_id = {sample_kind.id: sample_kind.name for sample_kind in SampleKind.objects.all()}
+
         return Response({
             "total_count": Sample.objects.all().count(),
             "extracted_count": Sample.objects.filter(extracted_from_id__isnull=False).count(),
-            "biospecimen_type_counts": {
-                c["biospecimen_type"]: c["biospecimen_type__count"]
-                for c in Sample.objects.values("biospecimen_type").annotate(Count("biospecimen_type"))
+            "kinds_counts": {
+                sample_kind_names_by_id[c["sample_kind"]]: c["sample_kind__count"]
+                for c in Sample.objects.values("sample_kind").annotate(Count("sample_kind"))
             },
             "tissue_source_counts": {
                 c["tissue_source"]: c["tissue_source__count"]
@@ -609,8 +635,56 @@ class VersionViewSet(viewsets.ReadOnlyModelViewSet):
         "revision__user": ["exact"],
     }
 
-
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     filterset_fields = _user_filterset_fields
+
+    def get_permissions(self):
+        if self.action == "update_self":
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [DjangoModelPermissions]
+        return [permission() for permission in permission_classes]
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.queryset.get(pk=kwargs.get("pk"))
+        password = request.data.pop("password", None)
+        serializer = self.serializer_class(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        if password is not None:
+            user.set_password(password)
+            user.save()
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["patch"])
+    def update_self(self, request):
+        """
+        Updates the user's own data, excluding permission fields
+        """
+        data = request.data
+        if "groups" in data or "is_staff" in data or "is_superuser" in data:
+            return Response({
+                "ok": False,
+                "detail": "Forbidden field",
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        user_id = request.user.id
+        data["id"] = user_id
+        password = data.pop("password", None)
+        instance = self.queryset.get(pk=user_id)
+        serializer = self.serializer_class(instance, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        if password is not None:
+            user.set_password(password)
+            user.save()
+        return Response(serializer.data)
+
+
+
+class GroupViewSet(viewsets.ModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+    filterset_fields = _group_filterset_fields
