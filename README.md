@@ -1,3 +1,5 @@
+Continued at https://github.com/c3g/freezeman
+
 # C3G FreezeMan Server
 
 ![Travis Build Status](https://api.travis-ci.com/c3g/freezeman_server.svg?branch=master)
